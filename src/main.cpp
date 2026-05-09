@@ -205,7 +205,7 @@ bool open_path_in_default_app(const fs::path& path) {
     if (!vscode_command.empty()) {
         command = vscode_command + " --reuse-window --goto " + quoted_path;
         std::cout << "[Open] VSCode fallback: " << command << std::endl;
-        if (std::system(command.c_str()) == 0) {
+        if (std::system(command.c_str()) == 0) {   
             std::cout << "[Open] VSCode opened!" << std::endl;
             return true;
         }
@@ -899,7 +899,7 @@ std::string build_fallback_create_response(const std::string& user_input) {
         // Disable hardcoded portfolio template → let LLM handle it
         //content = generic_file_template(file_path, user_input);
     }
-
+    
 
     const bool asks_for_css = contains_word_ascii(lower_input, "css") ||
                               lower_input.find(".css") != std::string::npos ||
@@ -1129,7 +1129,7 @@ bool execute_create_command(const std::string& response, const std::string& user
 
         strip_wrapping_code_fence(command.content);
         trim_generated_tail(command.content, output_path);
-
+        
 // Auto-lint ALL file types
         std::string lint_msg = "lint: " + output_path.string() + " - check for errors and fix";
         std::cout << "[Auto-lint ALL] " << lint_msg << std::endl;
@@ -1190,7 +1190,7 @@ bool execute_create_command(const std::string& response, const std::string& user
         // ── Check if we created web files (HTML, CSS, JS) ──────────────────
         const fs::path primary_file = choose_primary_created_file(created_paths);
         bool has_web_files = false;
-
+        
         for (const auto& fpath : created_paths) {
             const std::string ext = lowercase_ascii(fpath.extension().string());
             if (ext == ".html" || ext == ".htm" || ext == ".css" || ext == ".js") {
@@ -1202,21 +1202,21 @@ bool execute_create_command(const std::string& response, const std::string& user
         // ── First, open the HTML file directly in browser ──────────────────
         if (!primary_file.empty() && has_web_files) {
             const std::string primary_ext = lowercase_ascii(primary_file.extension().string());
-
+            
             // Open HTML file in browser
             if (primary_ext == ".html" || primary_ext == ".htm") {
                 std::cout << "[Browser] Opening file in default browser..." << std::endl;
-
+                
                 // Get absolute path and ensure it exists
                 fs::path abs_path = fs::absolute(primary_file);
                 if (fs::exists(abs_path)) {
                     // Use proper Windows path quoting
                     std::string path_str = abs_path.string();
                     std::string browser_command = "start \"\" \"" + path_str + "\"";
-
+                    
                     std::cout << "[Browser] File: " << path_str << std::endl;
                     int result = std::system(browser_command.c_str());
-
+                    
                     if (result == 0) {
                         std::cout << "[Browser] SUCCESS: File opened in browser" << std::endl;
                         std::this_thread::sleep_for(std::chrono::milliseconds(1500));
@@ -1230,7 +1230,7 @@ bool execute_create_command(const std::string& response, const std::string& user
                     std::cout << "[Browser] ERROR: File does not exist at " << abs_path.string() << std::endl;
                 }
             }
-
+            
             // Then activate Go Live
             std::cout << "[Live Server] Activating Go Live for live reload..." << std::endl;
             click_go_live_button();
@@ -1247,7 +1247,7 @@ bool execute_edit_command(const std::string& response) {
 
     std::string filename_part = response.substr(edit_pos + 5);
     filename_part.erase(0, filename_part.find_first_not_of(" \t\n\r"));
-
+    
     // Stop at newline or next command
     size_t end_pos = filename_part.find_first_of("\n");
     if (end_pos != std::string::npos) {
@@ -1268,7 +1268,7 @@ bool execute_run_command(const std::string& response) {
 
     std::string cmd = response.substr(run_pos + 4);
     cmd.erase(0, cmd.find_first_not_of(" \t\n\r"));
-
+    
     // Stop at newline or next command
     size_t end_pos = cmd.find_first_of("\n");
     if (end_pos != std::string::npos) {
@@ -1308,13 +1308,13 @@ bool execute_read_command(const std::string& response) {
     while ((start = clean_response.find("```", start)) != std::string::npos) {
         clean_response.erase(start, 3);
     }
-
+    
     size_t read_pos = clean_response.find("read:");
     if (read_pos == std::string::npos) return false;
 
     std::string filename = response.substr(read_pos + 5);
     filename.erase(0, filename.find_first_not_of(" \t\n\r"));
-
+    
     size_t end_pos = filename.find_first_of("\n");
     if (end_pos != std::string::npos) {
         filename = filename.substr(0, end_pos);
@@ -1335,14 +1335,14 @@ bool execute_read_command(const std::string& response) {
 
         std::cout << "\n[Agent Action] Reading file: " << filename << std::endl;
         std::cout << "────────────────────────────────────────────────" << std::endl;
-
+        
         std::string line;
         int line_num = 1;
         while (std::getline(infile, line)) {
             std::cout << line_num << ": " << line << std::endl;
             line_num++;
         }
-
+        
         std::cout << "────────────────────────────────────────────────" << std::endl;
         infile.close();
         return true;
@@ -1360,13 +1360,13 @@ bool execute_list_command(const std::string& response) {
     while ((start = clean_response.find("```", start)) != std::string::npos) {
         clean_response.erase(start, 3);
     }
-
+    
     size_t list_pos = clean_response.find("list:");
     if (list_pos == std::string::npos) return false;
 
     std::string dirname = response.substr(list_pos + 5);
     dirname.erase(0, dirname.find_first_not_of(" \t\n\r"));
-
+    
     size_t end_pos = dirname.find_first_of("\n");
     if (end_pos != std::string::npos) {
         dirname = dirname.substr(0, end_pos);
@@ -1383,19 +1383,19 @@ bool execute_list_command(const std::string& response) {
 
         std::cout << "\n[Agent Action] Listing directory: " << dirname << std::endl;
         std::cout << "────────────────────────────────────────────────" << std::endl;
-
+        
         int count = 0;
         for (const auto& entry : fs::directory_iterator(dirname)) {
             std::string type = entry.is_directory() ? "[DIR]" : "[FILE]";
             std::cout << type << " " << entry.path().filename().string();
-
+            
             if (entry.is_regular_file()) {
                 std::cout << " (" << entry.file_size() << " bytes)";
             }
             std::cout << std::endl;
             count++;
         }
-
+        
         std::cout << "────────────────────────────────────────────────" << std::endl;
         std::cout << "[System] Total items: " << count << std::endl;
         return true;
@@ -1413,13 +1413,13 @@ bool execute_analyze_command(const std::string& response) {
     while ((start = clean_response.find("```", start)) != std::string::npos) {
         clean_response.erase(start, 3);
     }
-
+    
     size_t analyze_pos = clean_response.find("analyze:");
     if (analyze_pos == std::string::npos) return false;
 
     std::string filename = response.substr(analyze_pos + 8);
     filename.erase(0, filename.find_first_not_of(" \t\n\r"));
-
+    
     size_t end_pos = filename.find_first_of("\n");
     if (end_pos != std::string::npos) {
         filename = filename.substr(0, end_pos);
@@ -1447,7 +1447,7 @@ bool execute_analyze_command(const std::string& response) {
         while (std::getline(infile, line)) {
             line_count++;
             char_count += line.length() + 1; // +1 for newline
-
+            
             std::istringstream words(line);
             std::string word;
             while (words >> word) {
@@ -1462,7 +1462,7 @@ bool execute_analyze_command(const std::string& response) {
         std::cout << "Lines:      " << line_count << std::endl;
         std::cout << "Words:      " << word_count << std::endl;
         std::cout << "Characters: " << char_count << std::endl;
-
+        
         // Get file size
         auto file_size = fs::file_size(filename);
         std::cout << "Size:       " << file_size << " bytes" << std::endl;
@@ -1482,13 +1482,13 @@ bool execute_summarize_command(const std::string& response) {
     while ((start = clean_response.find("```", start)) != std::string::npos) {
         clean_response.erase(start, 3);
     }
-
+    
     size_t summarize_pos = clean_response.find("summarize:");
     if (summarize_pos == std::string::npos) return false;
 
     std::string filename = response.substr(summarize_pos + 10);
     filename.erase(0, filename.find_first_not_of(" \t\n\r"));
-
+    
     size_t end_pos = filename.find_first_of("\n");
     if (end_pos != std::string::npos) {
         filename = filename.substr(0, end_pos);
@@ -1509,14 +1509,14 @@ bool execute_summarize_command(const std::string& response) {
 
         std::cout << "\n[Agent Action] Retrieving for summarization: " << filename << std::endl;
         std::cout << "────────────────────────────────────────────────" << std::endl;
-
+        
         std::string full_content;
         std::string line;
         while (std::getline(infile, line)) {
             full_content += line + "\n";
         }
         infile.close();
-
+        
         // Return content to agent in next response (agent can then summarize)
         std::cout << full_content << std::endl;
         std::cout << "────────────────────────────────────────────────" << std::endl;
@@ -1536,13 +1536,13 @@ bool execute_delete_command(const std::string& response) {
     while ((start = clean_response.find("```", start)) != std::string::npos) {
         clean_response.erase(start, 3);
     }
-
+    
     size_t delete_pos = clean_response.find("delete:");
     if (delete_pos == std::string::npos) return false;
 
     std::string filename = response.substr(delete_pos + 7);
     filename.erase(0, filename.find_first_not_of(" \t\n\r"));
-
+    
     size_t end_pos = filename.find_first_of("\n");
     if (end_pos != std::string::npos) {
         filename = filename.substr(0, end_pos);
@@ -1706,7 +1706,7 @@ int main() {
 
         // ── KV Cache Management: Check for overflow ────────────────────────
         if (n_past + n_turn > c_params.n_ctx) {
-            std::cout << "[System] Context full (" << n_past << " + " << n_turn
+            std::cout << "[System] Context full (" << n_past << " + " << n_turn 
                     << " > " << c_params.n_ctx << "). Clearing old memory..." << std::endl;
             // Free and recreate context to clear KV cache
             llama_free(ctx);
@@ -1808,7 +1808,7 @@ int main() {
 
             // ── Self-Correction Logic: If gain is very low, model might be confused ─
             if (improvement < 5.0f && i > 100) {
-                std::cout << "\n[TurboQuant Alert] Low gain (" << improvement
+                std::cout << "\n[TurboQuant Alert] Low gain (" << improvement 
                         << "%) detected. Agent may need clarification.\n";
             }
 
@@ -1927,7 +1927,7 @@ int main() {
             std::cout << std::endl;
         }
 
-        // ── Update persistent memory position for next turn ────────────────
+        // ── Update persistent memory position for next turn ──────────────── 
         n_past = n_cur;  // n_cur tracks all tokens (input + generated)
 
         // ── AGENT COMMAND PARSING & EXECUTION ──────────────────────────────
@@ -1959,7 +1959,7 @@ int main() {
         if (!has_fallback_create && full_response.find("run:") != std::string::npos) {
             execute_run_command(full_response);
         }
-
+        
     }
 
     llama_free(ctx);
