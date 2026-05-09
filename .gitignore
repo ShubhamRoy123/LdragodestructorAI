@@ -4,3 +4,4 @@
 *.obj
 *.lib
 .DS_Store
+models/*.gguf
